@@ -47,8 +47,7 @@ class Item(Base):
     description = Column(String(800), nullable=False)
     category_id = Column(Integer, ForeignKey('category.id'))
     category = relationship("Category", back_populates="items")
-    user_id = Column(Integer, ForeignKey('user.id'))
-	add_date = Column(Date, nullable=False)
+    user_id = Column(Integer, ForeignKey('user.id')
 
     # serialize function
     @property
