@@ -1,0 +1,28 @@
+{% extends "index.html" %}
+{% block body %}
+<div class="row">
+	<div class="col-xl-3 col-lg-3 col-md-3 col-sm-12 categories">
+		<h2 class="category-title">Categories</h2><br>
+
+		{% for category in categories %}
+
+			<a class="category" href="{{url_for('categoryDetails', name = category.name)}}">{{category.name}}</a><br>
+
+		{% endfor %}
+		<br><br>
+	</div>
+
+	<div class="col-xl-9 col-lg-9 col-md-9 col-sm-12 latestItems">
+		{% if session.logged_in %}
+		<a id="add-item" href="{{url_for('addItem')}}">Add Item</a>
+		{% endif %}
+		<h2 class="items-title">Latest Items</h2><br>
+		
+		{% for item in latestItems %}
+
+			<a class="item" href = "{{url_for('itemDescription', category_name = item.category.name, item_title = item.title)}}">{{item.title}}<span class="category-name">({{item.category.name}})</span></a><br>
+
+		{% endfor %}
+	</div>
+</div>
+{% endblock %}
