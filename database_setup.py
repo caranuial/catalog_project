@@ -22,23 +22,6 @@ class Category(Base):
     name = Column(String(250), nullable=False)
     items = relationship("Item", back_populates="category")
 
-    # serialize function
-    @property
-    def serialize(self):
-        """Return object data in serialization"""
-        if len(self.items):
-            return {
-                    "Item": [i.serialize for i in self.items],
-                    "name": self.name,
-                    "id": self.id
-                   }
-        else:
-            return {
-                    "name": self.name,
-                    "id": self.id
-                   }
-
-
 class Item(Base):
     __tablename__ = 'item'
 
@@ -48,18 +31,6 @@ class Item(Base):
     category_id = Column(Integer, ForeignKey('category.id'))
     category = relationship("Category", back_populates="items")
     user_id = Column(Integer, ForeignKey('user.id'))
-
-    # serialize function
-    @property
-    def serialize(self):
-        """Return object data in serialization"""
-        return {
-                "cat_id": self.category_id,
-                "description": self.description,
-                "id": self.id,
-                "title": self.title
-               }
-
 
 engine = create_engine('sqlite:///mycatalog.db')
 Base.metadata.create_all(engine)
