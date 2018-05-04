@@ -22,6 +22,22 @@ class Category(Base):
     name = Column(String(250), nullable=False)
     items = relationship("Item", back_populates="category")
 
+    # serialize function
+    @property
+    def serialize(self):
+        """Return object data in serialization"""
+        if len(self.items):
+            return {
+                    "Item": [i.serialize for i in self.items],
+                    "name": self.name,
+                    "id": self.id
+                   }
+        else:
+            return {
+                    "name": self.name,
+                    "id": self.id
+                   }
+    
 class Item(Base):
     __tablename__ = 'item'
 
