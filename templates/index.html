@@ -1,16 +1,22 @@
-<!doctype html>
-  <head>
-    <title>Winter Catalog</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-	<link rel=stylesheet type=text/css href="{{ url_for('styles', filename='bootstrap.min.css') }}">
-  </head>
+{% extends "default.html" %}
+{% block content %}
+<div class="row">
+	{% include "categoriesBanner.html" %}
 
-  <body class="container">
-    <header class="row" id="navbar">
-      <div class="col-lg-6 col-md-6 col-sm-12">
-        <h1 id="sitename"><a class="site-name" href="{{url_for('homePage')}}">Catalog App</a></h1>
-      </div>
-    </header>
-   
-  </body>
+	<div class="col-sm-9 col-xs-12 latestItems">
+		<h3 class="items-title">Latest Items</h3><br>
+		<p>
+		{% for item in latestItems %}
+
+			<a class="item" href = "{{url_for('itemDescription', category_id = item.category_id, item_id = item.id)}}">{{item.title}} <span class="category-name">({{item.category.name}})</span></a><br>
+
+		{% endfor %}
+		</p>
+		{% if login_session.logged_in %}
+		
+		<p><a id="add-item" href="{{url_for('newItem')}}">Add Item</a></p>
+		
+		{% endif %}
+	</div>
+</div>
+{% endblock %}

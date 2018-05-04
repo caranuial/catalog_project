@@ -1,0 +1,25 @@
+{% extends "default.html" %}
+{% block content %}
+<div class="row">
+	{% include "categoriesBanner.html" %}
+		
+	<div class="col-sm-9 col-xs-12 category-items">
+		<h3 class="items-title">{{category_name}} Items ({{count}} items)</h3><br>
+		<p>
+		{% for item in items %}
+			<a class="item" href="{{url_for('itemDescription', category_id = item.category_id, item_id = item.id)}}">{{item.title}}</a>
+			{% if login_session.logged_in %}
+			<a href="{{url_for('editItem', category_id=item.category_id, item_id=item.id)}}">Edit</a> | 
+			<a href="{{url_for('deleteItem', category_id=item.category_id, item_id=item.id)}}">Delete</a>
+			{% endif %}
+			<br>
+		{% endfor %}
+		</p>
+		<p>
+		{% if login_session.logged_in %}
+		<a id="add-item" href="{{url_for('newItem')}}">Add Item</a><br>
+		{% endif %}
+		</p>
+	</div>
+</div>
+{% endblock %}

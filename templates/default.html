@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Winter Catalog</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+	<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+	<link rel=stylesheet type=text/css href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" crossorigin="anonymous">
+	
+	<!--LOAD PRE-REQUISITES FOR GOOGLE SIGN IN -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="https://apis.google.com/js/client:platform.js?onload=start" async defer>
+	</script>
+    <!-- END PRE-REQUISITES FOR GOOGLE SIGN IN -->
+  </head>
+
+  <body class="container">
+	<div class="container" style="background-color:#D2E8E7"> 
+		<div class="navbar-header" >  
+			<a href="{{url_for('homePage')}}" class="navbar-brand">Catalog App</a>
+		</div> 
+		<nav class="collapse navbar-collapse" id="bs-navbar"> 
+			<ul class="nav navbar-nav navbar-right"> 
+				{% if not login_session.logged_in %}
+				<li><a href="{{ url_for('login') }}">log in</a></li>
+				{% elif login_session.provider == 'google' %}
+				<li><a href="{{ url_for('gdisconnect') }}">Google log out</a></i>
+				{% elif login_session.provider == 'facebook' %}
+				<li><a href="{{ url_for('fbdisconnect') }}">Facebook log out</a></i>
+				{% endif %}	
+			</ul> 
+		</nav> 
+	</div>   
+	
+      <div class="flash">
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          <ul>
+          {% for message in messages %}
+          <li> <strong> {{ message }} </strong> </li>
+          {% endfor %}
+          </ul>
+        {% endif %}
+        {% endwith %}
+      </div>
+   
+    {% block content %}
+	{% endblock %}
+   
+  </body>
+ </html>
