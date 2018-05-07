@@ -13,17 +13,21 @@ import json
 import requests
 from flask import make_response
 
+
 app = Flask(__name__)
+
 
 CLIENT_ID = json.loads(
     open('client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME = "WinterCatalog"
+
 
 # Prepare for database query
 engine = create_engine('sqlite:///mycatalog.db')
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 dbsession = DBSession()
+
 
 # Login page
 @app.route('/login')
@@ -33,6 +37,7 @@ def login():
         for x in xrange(32))
     login_session['state'] = state
     return render_template('login.html', STATE=state)
+
 
 # Google Connect
 @app.route('/gconnect', methods=['POST'])
@@ -88,7 +93,8 @@ def gconnect():
     stored_access_token = login_session.get('access_token')
     stored_gplus_id = login_session.get('gplus_id')
     if stored_access_token is not None and gplus_id == stored_gplus_id:
-        response = make_response(json.dumps('Current user is already connected.'),
+        response = make_response(json.dumps(
+                                    'Current user is already connected.'),
                                  200)
         response.headers['Content-Type'] = 'application/json'
         return response
@@ -116,21 +122,24 @@ def gconnect():
         user_id = createUser(login_session)
     login_session['user_id'] = user_id
     login_session['logged_in'] = True
-    
+
     output = ''
     output += '<h1>Welcome, '
     output += login_session['username']
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px;' + \
+              'height: 300px;' + \
+              'border-radius: 150px;' + \
+              '-webkit-border-radius: 150px;' + \
+              '-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     print "done!"
     return output
 
+
 # User Helper Functions
-
-
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session[
                    'email'], picture=login_session['picture'])
@@ -152,9 +161,8 @@ def getUserID(email):
     except:
         return None
 
+
 # DISCONNECT - Revoke a current user's token and reset their login_session
-
-
 @app.route('/gdisconnect')
 def gdisconnect():
     # Only disconnect a connected user.
@@ -170,9 +178,6 @@ def gdisconnect():
     result = h.request(url, 'GET')[0]
     print(result)
     if result['status'] == '200':
-        #response = make_response(json.dumps('Successfully disconnected.'), 200)
-        #response.headers['Content-Type'] = 'application/json'
-        #return response
         del login_session['access_token']
         del login_session['gplus_id']
         del login_session['username']
@@ -182,9 +187,11 @@ def gdisconnect():
         flash('You are now logged out.')
         return redirect('/index')
     else:
-        response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+        response = make_response(json.dumps(
+            'Failed to revoke token for given user.', 400))
         response.headers['Content-Type'] = 'application/json'
         return response
+
 
 # Index page
 @app.route('/')
@@ -192,7 +199,6 @@ def gdisconnect():
 def homePage():
     categories = dbsession.query(Category).distinct()
     latestItems = dbsession.query(Item).order_by(Item.id.desc()).limit(10)
-    #latestItems = dbsession.query(User).distinct().limit(10)
     return render_template(
                            "index.html",
                            categories=categories,
@@ -200,12 +206,15 @@ def homePage():
                            login_session=login_session
                            )
 
+
 # Show items in a category
 @app.route('/catalog/<category_id>')
 def categoryFullInfo(category_id):
     categories = dbsession.query(Category).distinct()
-    currentCategory = dbsession.query(Category).filter(Category.id == category_id).one()
-    items = dbsession.query(Item).filter(Item.category_id == category_id).distinct()
+    currentCategory = dbsession.query(Category).filter(
+        Category.id == category_id).one()
+    items = dbsession.query(Item).filter(
+        Item.category_id == category_id).distinct()
     count = items.count()
     return render_template(
                            "categoryDetails.html",
@@ -216,12 +225,18 @@ def categoryFullInfo(category_id):
                            login_session=login_session
                            )
 
+
 # Delete item in a category
 @app.route('/catalog/<category_id>/<item_id>/delete', methods=['POST', 'GET'])
 def deleteItem(category_id, item_id):
 
     itemToDelete = dbsession.query(Item).filter(Item.id == item_id).one()
-    
+    if 'username' not in login_session:
+        return redirect('/login')
+    if currentItem.user_id != login_session['user_id']:
+        return "<script>function myFunction() {alert('You are not " + \
+               "authorized to delete this Item.');}</script>" + \
+               "<body onload='myFunction()'>"
     if request.method == 'POST':
         dbsession.delete(itemToDelete)
         flash('%s Successfully Deleted' % itemToDelete.title)
@@ -238,10 +253,13 @@ def deleteItem(category_id, item_id):
                                login_session=login_session
                                )
 
+
 # Create a new item
 @app.route('/catalog/item/new/', methods=['GET', 'POST'])
 def newItem():
     categories = dbsession.query(Category).distinct()
+    if 'username' not in login_session:
+        return redirect('/login')
     if request.method == 'POST':
         newItem = Item(
                        user_id=1,
@@ -260,12 +278,20 @@ def newItem():
                                login_session=login_session
                                )
 
+
 # Item Edit
 @app.route('/catalog/<category_id>/<item_id>/edit/', methods=['GET', 'POST'])
 def editItem(category_id, item_id):
     categories = dbsession.query(Category).distinct()
-    currentCategory = dbsession.query(Category).filter(Category.id == category_id).one()
+    currentCategory = dbsession.query(Category).filter(
+        Category.id == category_id).one()
     currentItem = dbsession.query(Item).filter(Item.id == item_id).one()
+    if 'username' not in login_session:
+        return redirect('/login')
+    if currentItem.user_id != login_session['user_id']:
+        return "<script>function myFunction() {alert('You are not " + \
+               "authorized to edit this Item.');}</script>" + \
+               "<body onload='myFunction()'>"
     if request.method == 'POST':
         if request.form['title']:
             currentItem.name = request.form['title']
@@ -286,12 +312,14 @@ def editItem(category_id, item_id):
                                login_session=login_session
                                )
 
+
 # Item Description
 @app.route('/description/<category_id>/<item_id>')
 def itemDescription(category_id, item_id):
     categories = dbsession.query(Category).distinct()
     item = dbsession.query(Item).filter(Item.id == item_id).one()
-    currentCategory = dbsession.query(Category).filter(Category.id == item.category_id).one()
+    currentCategory = dbsession.query(Category).filter(
+        Category.id == item.category_id).one()
     return render_template(
                            "itemDescription.html",
                            categories=categories,
@@ -300,23 +328,25 @@ def itemDescription(category_id, item_id):
                            login_session=login_session
                            )
 
+
 # JSON APIs to view Restaurant Information
 @app.route('/catalog/<category_id>/JSON')
 def categoryJSON(category_id):
     items = dbsession.query(Item).filter(Item.category_id == category_id).all()
     return jsonify(item=[i.serialize for i in items])
 
+
 @app.route('/catalog/<category_id>/<item_id>/JSON')
 def itemJSON(category_id, item_id):
     item = dbsession.query(Item).filter(Item.id == item_id).one()
     return jsonify(item=item.serialize)
+
 
 @app.route('/catalog/JSON')
 def catalogJSON():
     categories = dbsession.query(Category).all()
     return jsonify(categories=[r.serialize for r in categories])
 
-						   
 if __name__ == '__main__':
     app.debug = True
     app.secret_key = 'super_secret_key'
