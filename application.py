@@ -301,6 +301,16 @@ def itemDescription(category_id, item_id):
                            )
 
 # JSON APIs to view Restaurant Information
+@app.route('/catalog/<category_id>/JSON')
+def categoryJSON(category_id):
+    items = dbsession.query(Item).filter(Item.category_id == category_id).all()
+    return jsonify(item=[i.serialize for i in items])
+
+@app.route('/catalog/<category_id>/<item_id>/JSON')
+def itemJSON(category_id, item_id):
+    item = dbsession.query(Item).filter(Item.id == item_id).one()
+    return jsonify(item=item.serialize)
+
 @app.route('/catalog/JSON')
 def catalogJSON():
     categories = dbsession.query(Category).all()
